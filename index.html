@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ToDo and Note</title>
+    <title>My Modern Workspace</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,29 +37,19 @@
                 <h2>รายการสิ่งที่ต้องทำ 📝</h2>
                 
                 <div class="input-wrapper">
-                    
                     <div class="input-row">
                         <input type="text" id="input-box" placeholder="พิมพ์สิ่งที่ต้องทำ...">
-                        
                         <div class="date-container" title="กำหนดเวลาเสร็จ">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                             <input type="datetime-local" id="date-box">
                         </div>
                     </div>
-
                     <div class="action-row">
                         <button onclick="addTask()">เพิ่มรายการ +</button>
                     </div>
-
                 </div>
 
-                <ul id="list-container">
-                    </ul>
+                <ul id="list-container"></ul>
             </div>
             
             <div class="notes-panel">
@@ -68,8 +58,7 @@
                     <input type="text" id="note-input-box" placeholder="เพิ่มโน้ตใหม่...">
                     <button onclick="addNote()">เพิ่ม</button>
                 </div>
-                <ul id="note-list-container" class="notes-list">
-                    </ul>
+                <ul id="note-list-container" class="notes-list"></ul>
             </div>
 
         </div>
@@ -93,6 +82,12 @@
                 <button onclick="closeFeedbackModal()" style="margin-top: 20px; background: #6b7280; width: 100%;">ปิด</button>
             </div>
         </div>
+    </div>
+
+    <div class="footer-credit">
+        © Vibe Coding | Tanakorn Jennadtee<br>
+        Gemini 3 Pro <br>
+        version 0.0.1 beta (เนื่องจากเป็นเวอร์ชั่นเบต้าในอนาคตอาจจะมีการอัพเดตและแก้ไขบัคบางประการเพื่อประสิทธิภาพที่ดีที่สุด)
     </div>
 
     <script src="users.js"></script>
