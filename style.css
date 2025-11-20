@@ -1,7 +1,8 @@
 /* =========================================
-   1. การตั้งค่าพื้นฐาน & ฟอนต์
+   1. การตั้งค่าพื้นฐาน & ตัวแปรสี
    ========================================= */
 :root {
+    /* สีหลักแบบ Gradient (ม่วง-คราม) */
     --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --bg-color: #f3f4f6;
     --card-bg: #ffffff;
@@ -14,21 +15,30 @@
 
 body {
     background: var(--bg-color);
+    /* ลายจุดพื้นหลังจางๆ */
     background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
     background-size: 20px 20px;
     display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-main);
 }
 
-/* Layout Boxes */
+/* =========================================
+   2. การจัดวาง Layout (Login & Workspace)
+   ========================================= */
 .container {
     background: var(--card-bg); width: 100%; max-width: 420px; padding: 40px;
     border-radius: 24px; box-shadow: var(--shadow); transition: transform 0.3s ease;
 }
+
 .main-workspace {
     background: transparent; width: 100%; max-width: 900px; 
     padding: 40px; border-radius: 24px; transition: transform 0.3s ease;
+    /* สำคัญ: margin auto ช่วยจัดให้อยู่กึ่งกลางแนวนอนเสมอ */
+    margin: 0 auto; 
 }
+
+/* Grid 2 คอลัมน์ (ซ้าย-ขวา) */
 .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+
 .todo-panel, .notes-panel {
     padding: 30px; border-radius: 18px; box-shadow: var(--shadow);
     background: var(--card-bg); border: 1px solid #e5e7eb;
@@ -38,27 +48,37 @@ h2 { color: #111827; margin-bottom: 40px; text-align: center; font-weight: 600; 
 #welcome-message { font-size: 1.2rem; color: #4b5563; margin-bottom: 10px; }
 .main-workspace h2 { font-size: 1.5rem; }
 
-/* Input Wrapper */
+/* =========================================
+   3. Input Wrapper (ส่วนกรอกข้อมูล To-Do)
+   ========================================= */
 .input-wrapper { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; }
 .input-row { display: flex; gap: 10px; align-items: stretch; }
+
+/* ช่องพิมพ์ข้อความ (ยืดเต็มพื้นที่ที่เหลือ) */
 #input-box { flex: 1; padding: 14px 18px; border: 2px solid #e5e7eb; border-radius: 14px; background: #f9fafb; font-size: 1rem; outline: none; transition: all 0.3s ease; color: #374151; }
 #input-box:focus { border-color: #667eea; background: #fff; }
 
+/* กล่องปฏิทิน */
 .date-container {
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 5px;
     background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 14px;
-    padding: 0 12px; transition: all 0.3s ease;
+    padding: 0 8px; transition: all 0.3s ease;
 }
 .date-container:focus-within { border-color: #667eea; background: #fff; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1); }
+
+/* ปรับขนาดช่องปฏิทินให้เล็กกะทัดรัด (120px) */
 #date-box {
     border: none !important; background: transparent !important; padding: 12px 0 !important;
     box-shadow: none !important; outline: none; font-family: 'Prompt', sans-serif;
-    color: #374151; cursor: pointer; max-width: 160px;
+    color: #374151; cursor: pointer; max-width: 45px; font-size: 0.9rem;
 }
+
 .action-row { display: flex; justify-content: flex-end; }
 .action-row button { padding: 12px 30px; width: auto; font-size: 1rem; margin: 0; }
 
-/* Inputs */
+/* =========================================
+   4. Input ทั่วไป (Login/Notes)
+   ========================================= */
 .input-group { display: flex; gap: 10px; margin-bottom: 30px; }
 #note-input-box, #username, #password {
     flex: 1; padding: 14px 18px; border: 2px solid #e5e7eb; border-radius: 14px;
@@ -73,7 +93,9 @@ button {
 }
 button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4); filter: brightness(1.1); }
 
-/* List Styles */
+/* =========================================
+   5. รายการ List (To-Do & Notes)
+   ========================================= */
 ul { list-style: none; }
 ul li {
     font-size: 16px; padding: 16px 20px; background: var(--card-bg); border: 1px solid #e5e7eb;
@@ -83,12 +105,14 @@ ul li {
 }
 ul li:hover { transform: translateX(5px); border-color: #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
 
+/* ป้ายวันที่ (Date Badge) ในรายการ */
 .task-date {
-    font-size: 0.75rem; color: #6b7280; background: #f3f4f6; padding: 4px 4px;
+    font-size: 0.75rem; color: #6b7280; background: #f3f4f6; padding: 4px 8px;
     border-radius: 6px; margin-left: auto; margin-right: 10px; white-space: nowrap;
     display: flex; align-items: center; gap: 5px; border: 1px solid #e5e7eb;
 }
 
+/* วงกลม Checkbox */
 ul:not(.notes-list) li::before { content: ''; width: 20px; height: 20px; border: 2px solid #d1d5db; border-radius: 50%; margin-right: 5px; flex-shrink: 0; }
 ul li.checked { color: var(--text-muted); text-decoration: line-through; background: #f9fafb; border-color: transparent; }
 ul li.checked::before {
@@ -96,6 +120,8 @@ ul li.checked::before {
     background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="12" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>');
     background-repeat: no-repeat; background-position: center;
 }
+
+/* ปุ่มลบ (กากบาท) */
 span.close {
     width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     font-size: 18px; color: #ef4444; opacity: 0; transition: all 0.2s; margin-left: auto;
@@ -103,7 +129,9 @@ span.close {
 ul li:hover span.close { opacity: 1; }
 span.close:hover { background: #fee2e2; color: white; }
 
-/* Logout Button */
+/* =========================================
+   6. ปุ่ม Logout (กากบาทสีแดง)
+   ========================================= */
 .btn-logout {
     position: fixed; top: 30px; right: 30px; width: 40px !important; height: 40px !important;
     display: flex; align-items: center; justify-content: center;
@@ -117,7 +145,9 @@ span.close:hover { background: #fee2e2; color: white; }
     transform: scale(1.1) !important; box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4) !important;
 }
 
-/* Feedback */
+/* =========================================
+   7. Feedback System UI
+   ========================================= */
 #feedback-btn-container { position: fixed; bottom: 30px; left: 30px; z-index: 1000; }
 #feedback-btn { padding: 10px 15px; border-radius: 10px; background: #10b981; color: white; font-weight: 500; border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); cursor: pointer; transition: 0.2s; }
 #feedback-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.5); }
@@ -125,6 +155,7 @@ span.close:hover { background: #fee2e2; color: white; }
 #view-feedback-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(245, 158, 11, 0.5); }
 #feedback-count-badge { position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; z-index: 10; border: 2px solid white; }
 
+/* หน้าต่าง Modal */
 .modal-feedback { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
 .modal-content { background-color: var(--card-bg); margin: 10% auto; padding: 25px; border-radius: 18px; width: 80%; max-width: 400px; box-shadow: var(--shadow); position: relative; animation: fadeIn 0.3s; }
 .close-modal { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
@@ -142,6 +173,9 @@ span.close:hover { background: #fee2e2; color: white; }
 
 @keyframes fadeIn { from {opacity: 0; transform: translateY(-20px);} to {opacity: 1; transform: translateY(0);} }
 
+/* =========================================
+   8. Responsive (มือถือ)
+   ========================================= */
 @media (max-width: 880px) {
     .grid-layout { grid-template-columns: 1fr; gap: 30px; }
     .main-workspace { max-width: 95%; padding: 30px 20px; }
@@ -152,10 +186,12 @@ span.close:hover { background: #fee2e2; color: white; }
     .action-row button { width: 100%; }
 }
 
-/* Footer Credit */
+/* =========================================
+   9. Footer Credit
+   ========================================= */
 .footer-credit {
     position: fixed; bottom: 10px; left: 0; width: 100%; text-align: center;
     font-size: 0.8rem; font-weight: 500; color: #9ca3af;
     pointer-events: none; z-index: 50; letter-spacing: 0.5px;
-    line-height: 1.4; /* เพิ่มระยะห่างบรรทัดให้อ่านง่าย */
+    line-height: 1.5;
 }
