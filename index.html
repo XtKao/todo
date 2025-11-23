@@ -13,6 +13,14 @@
 </head>
 <body>
 
+    <button onclick="toggleTheme()" class="theme-btn" title="เปลี่ยนโหมดสี" id="theme-toggle-btn">
+        🖋️
+    </button>
+
+    <button onclick="logout()" class="btn-logout" title="ออกจากระบบ" id="logout-btn" style="display: none;">
+        &#10006;
+    </button>
+
     <div class="container" id="login-page">
         <h2>เข้าสู่ระบบ 🔒</h2>
         <div class="input-group">
@@ -23,10 +31,6 @@
         </div>
         <button onclick="checkLogin()" style="width: 100%;">Login</button>
     </div>
-
-    <button onclick="logout()" class="btn-logout" title="ออกจากระบบ" id="logout-btn" style="display: none;">
-        &#10006;
-    </button>
 
     <div class="main-workspace" id="todo-page" style="display: none;">
         <div class="grid-layout">
@@ -39,7 +43,7 @@
                     <div class="input-row">
                         <input type="text" id="input-box" placeholder="พิมพ์สิ่งที่ต้องทำ...">
                         <div class="date-container" title="กำหนดเวลาเสร็จ">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                             <input type="datetime-local" id="date-box">
                         </div>
                     </div>
@@ -70,22 +74,20 @@
             <span class="close-modal" onclick="closeFeedbackModal()">&times;</span>
             <div id="user-feedback-form">
                 <h3>ส่งข้อเสนอแนะ 💌</h3>
-                <textarea id="feedback-text" placeholder="พิมพ์ข้อเสนอแนะถึงแอดมิน..."></textarea>
+                <textarea id="feedback-text" placeholder="พิมพ์ข้อเสนอแนะ..."></textarea>
                 <button onclick="submitFeedback()">ส่ง Feedback</button>
             </div>
             <div id="admin-feedback-history" style="display: none;">
-                <h3>ประวัติ Feedback ทั้งหมด 📜</h3>
-                <div id="feedback-list">
-                    <p style="text-align: center; color: #9ca3af;">กำลังโหลด...</p>
-                </div>
+                <h3>ประวัติ Feedback 📜</h3>
+                <div id="feedback-list"></div>
                 <button onclick="closeFeedbackModal()" style="margin-top: 20px; background: #6b7280; width: 100%;">ปิด</button>
             </div>
         </div>
     </div>
 
     <div class="footer-credit">
-        © Vibe Coding | Tanakorn Jennadtee<br>
-        Gemini 3 Pro
+        © Vibe Coding By Tanakorn Jennadtee<br>
+        And Gemini 3 Pro
     </div>
 
     <script src="users.js"></script>

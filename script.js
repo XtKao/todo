@@ -1,6 +1,4 @@
-let currentUser = null; // เก็บชื่อผู้ใช้ที่กำลังล็อกอิน
-
-// อ้างอิง Element จาก HTML
+let currentUser = null; 
 const loginPage = document.getElementById("login-page");
 const todoPage = document.getElementById("todo-page");
 const logoutBtn = document.getElementById("logout-btn");
@@ -18,58 +16,62 @@ const userFeedbackForm = document.getElementById("user-feedback-form");
 const adminFeedbackHistory = document.getElementById("admin-feedback-history");
 const feedbackList = document.getElementById("feedback-list");
 
-// =============================================
-// ระบบ Login & Logout
-// =============================================
-
 function checkLogin() {
     const userIn = usernameInput.value;
     const passIn = passwordInput.value;
-    
-    if (typeof usersDB === 'undefined') { alert("ไม่พบฐานข้อมูลผู้ใช้! ตรวจสอบไฟล์ users.js"); return; }
-    
-    // ค้นหา user ใน Database
+    if (typeof usersDB === 'undefined') { alert("ไม่พบไฟล์ users.js"); return; }
     const foundUser = usersDB.find(u => u.username === userIn && u.password === passIn);
-    
     if (foundUser) {
         currentUser = foundUser.username;
         alert("ยินดีต้อนรับคุณ " + foundUser.displayName + " !"); 
-        
-        // สลับหน้าจอ Login -> Workspace
         loginPage.style.display = "none"; 
-        todoPage.style.display = "block"; // ใช้ block เพื่อให้จัดกึ่งกลางได้
-        logoutBtn.style.display = "flex"; // โชว์ปุ่ม Logout
-        
-        loadData(); // โหลดข้อมูลเก่า
-        checkForAdminNotifications(); // เช็คแจ้งเตือน Admin
-    } else { 
-        alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง!"); 
-    }
+        todoPage.style.display = "block"; 
+        logoutBtn.style.display = "flex"; 
+        loadData(); 
+        loadTheme(); 
+        checkForAdminNotifications(); 
+    } else { alert("รหัสผิดครับ!"); }
 }
 
 function logout() {
     currentUser = null;
-    // เคลียร์หน้าจอ
-    listContainer.innerHTML = ""; noteListContainer.innerHTML = ""; feedbackBtnContainer.innerHTML = "";
-    
-    // สลับหน้าจอ Workspace -> Login
+    listContainer.innerHTML = ""; noteListContainer.innerHTML = ""; 
+    document.getElementById('feedback-btn-container').innerHTML = "";
     todoPage.style.display = "none"; 
     logoutBtn.style.display = "none";
     loginPage.style.display = "block";
     usernameInput.value = ""; passwordInput.value = "";
 }
 
-// =============================================
-// ฟังก์ชัน To-Do List
-// =============================================
+// ==================== THEME TOGGLE (EMOJI) ====================
+function toggleTheme() {
+    document.body.classList.toggle("dark-mode");
+    const btn = document.getElementById("theme-toggle-btn");
+    if (document.body.classList.contains("dark-mode")) {
+        localStorage.setItem("theme", "dark");
+        btn.innerHTML = "🖊️"; // Dark Mode ให้โชว์ปากกา 1
+    } else {
+        localStorage.setItem("theme", "light");
+        btn.innerHTML = "🖋️"; // Light Mode ให้โชว์ปากกา 2
+    }
+}
+
+function loadTheme() {
+    const btn = document.getElementById("theme-toggle-btn");
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-mode");
+        btn.innerHTML = "🖊️";
+    } else {
+        btn.innerHTML = "🖋️";
+    }
+}
+// =============================================================
 
 function addTask() {
     if (inputBox.value === '') { alert("กรุณาพิมพ์ข้อความก่อนกดเพิ่ม!"); } else {
         let li = document.createElement("li");
         let textNode = document.createTextNode(inputBox.value);
         li.appendChild(textNode);
-        
-        // ถ้ามีการเลือกวันที่
         if (dateBox.value) {
             let dateObj = new Date(dateBox.value);
             let options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -78,23 +80,16 @@ function addTask() {
             dateSpan.innerHTML = `🕒 ${dateObj.toLocaleDateString('th-TH', options)}`;
             li.appendChild(dateSpan);
         }
-        
         listContainer.appendChild(li);
-        // ปุ่มลบ
         let span = document.createElement("span"); span.innerHTML = "\u00d7"; span.className = "close"; li.appendChild(span);
     }
     inputBox.value = ""; dateBox.value = ""; saveData(); 
 }
 
-// ดักจับการคลิกที่รายการ (ติ๊กถูก / ลบ)
 listContainer.addEventListener("click", function(e) {
     if (e.target.tagName === "LI") { e.target.classList.toggle("checked"); saveData(); } 
     else if (e.target.tagName === "SPAN" && e.target.classList.contains("close")) { e.target.parentElement.remove(); saveData(); }
 }, false);
-
-// =============================================
-// ฟังก์ชัน Notes
-// =============================================
 
 function addNote() {
     if (noteInputBox.value === '') { alert("กรุณาพิมพ์โน้ตก่อนกดเพิ่ม!"); } else {
@@ -109,37 +104,22 @@ noteListContainer.addEventListener("click", function(e) {
     if (e.target.tagName === "SPAN") { e.target.parentElement.remove(); saveNotes(); }
 }, false);
 
-// =============================================
-// ระบบบันทึกข้อมูล (Local Storage)
-// =============================================
-function saveData() { if (currentUser) localStorage.setItem("todo_data_" + currentUser, listContainer.innerHTML); }
-function saveNotes() { if (currentUser) localStorage.setItem("notes_data_" + currentUser, noteListContainer.innerHTML); }
+function saveData() { if (currentUser) localStorage.setItem("todo_" + currentUser, listContainer.innerHTML); }
+function saveNotes() { if (currentUser) localStorage.setItem("notes_" + currentUser, noteListContainer.innerHTML); }
 
 function loadData() { 
     if (currentUser) {
-        // แสดงชื่อใน Header
         const foundUser = usersDB.find(u => u.username === currentUser);
-        const displayName = foundUser ? foundUser.displayName : currentUser;
-        document.getElementById('welcome-message').textContent = `ยินดีต้อนรับคุณ ${displayName}`;
-        
-        // โหลดข้อมูล
-        const todoData = localStorage.getItem("todo_data_" + currentUser);
-        listContainer.innerHTML = todoData ? todoData : "";
-        const noteData = localStorage.getItem("notes_data_" + currentUser);
-        noteListContainer.innerHTML = noteData ? noteData : "";
-        
-        renderFeedbackButton(); // โหลดปุ่ม Feedback ตามสิทธิ์
+        document.getElementById('welcome-message').textContent = `ยินดีต้อนรับคุณ ${foundUser.displayName}`;
+        listContainer.innerHTML = localStorage.getItem("todo_" + currentUser) || "";
+        noteListContainer.innerHTML = localStorage.getItem("notes_" + currentUser) || "";
+        renderFeedbackButton();
     }
 }
-
-// =============================================
-// ระบบ Admin & Feedback
-// =============================================
 
 function isAdmin() { const foundUser = usersDB.find(u => u.username === currentUser); return foundUser && foundUser.isAdmin === true; }
 function getFeedbackCount() { const feedbacks = JSON.parse(localStorage.getItem('feedback_messages')) || []; return feedbacks.filter(f => f.read === false).length; }
 
-// แสดงปุ่มต่างกันตามสิทธิ์ (Admin เห็นปุ่มดู / User เห็นปุ่มส่ง)
 function renderFeedbackButton() {
     feedbackBtnContainer.innerHTML = ''; 
     const unreadCount = getFeedbackCount();
@@ -153,12 +133,10 @@ function renderFeedbackButton() {
     }
 }
 
-// จัดการ Modal
 function openUserFeedbackModal() { feedbackModal.style.display = "block"; userFeedbackForm.style.display = "block"; adminFeedbackHistory.style.display = "none"; feedbackText.value = ""; }
 function openAdminHistoryModal() { feedbackModal.style.display = "block"; userFeedbackForm.style.display = "none"; adminFeedbackHistory.style.display = "block"; displayFeedbackHistory(); }
 function closeFeedbackModal() { feedbackModal.style.display = "none"; }
 
-// ส่ง Feedback
 function submitFeedback() {
     const feedbackMsg = feedbackText.value.trim();
     if (feedbackMsg === '') { alert("กรุณาพิมพ์ข้อเสนอแนะก่อนส่ง!"); return; }
@@ -169,7 +147,6 @@ function submitFeedback() {
     alert("ส่งข้อเสนอแนะสำเร็จ!"); closeFeedbackModal();
 }
 
-// แจ้งเตือน Admin ตอนล็อกอิน
 function checkForAdminNotifications() {
     if (isAdmin()) { 
         const unreadCount = getFeedbackCount();
@@ -177,7 +154,6 @@ function checkForAdminNotifications() {
     }
 }
 
-// แสดงประวัติ Feedback
 function displayFeedbackHistory() {
     let allFeedback = JSON.parse(localStorage.getItem('feedback_messages')) || [];
     let historyHtml = ''; let updatedFeedback = [];
@@ -191,7 +167,6 @@ function displayFeedbackHistory() {
     renderFeedbackButton(); 
 }
 
-// กด Enter เพื่อทำงาน
 passwordInput.addEventListener("keypress", function(event) { if (event.key === "Enter") checkLogin(); });
 inputBox.addEventListener("keypress", function(event) { if (event.key === "Enter") addTask(); });
 noteInputBox.addEventListener("keypress", function(event) { if (event.key === "Enter") addNote(); });
