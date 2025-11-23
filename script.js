@@ -1,4 +1,7 @@
+// ==================== VARIABLES ====================
 let currentUser = null; 
+
+// อ้างอิง Element
 const loginPage = document.getElementById("login-page");
 const todoPage = document.getElementById("todo-page");
 const logoutBtn = document.getElementById("logout-btn");
@@ -16,6 +19,27 @@ const userFeedbackForm = document.getElementById("user-feedback-form");
 const adminFeedbackHistory = document.getElementById("admin-feedback-history");
 const feedbackList = document.getElementById("feedback-list");
 
+// ==================== 1. SESSION & LOGIN SYSTEM ====================
+
+// ฟังก์ชันตรวจสอบสถานะการล็อกอินเมื่อเปิดเว็บ (Auto Login)
+function checkSession() {
+    const savedUser = localStorage.getItem("session_user"); // ดูว่ามีใครล็อกอินค้างไว้ไหม
+    
+    if (savedUser) {
+        if (typeof usersDB === 'undefined') return; // กันเหนียว
+        
+        // ตรวจสอบว่า User นี้มีอยู่จริงไหม
+        const foundUser = usersDB.find(u => u.username === savedUser);
+        
+        if (foundUser) {
+            currentUser = foundUser.username;
+            // ข้ามหน้า Login ไปเลย ไม่ต้อง Alert ต้อนรับซ้ำ
+            loginToWorkspace(foundUser);
+        }
+    }
+}
+
+// ฟังก์ชันล็อกอินปกติ (กดปุ่ม)
 function checkLogin() {
     const userIn = usernameInput.value;
     const passIn = passwordInput.value;
@@ -23,60 +47,71 @@ function checkLogin() {
     if (typeof usersDB === 'undefined') { alert("ไม่พบไฟล์ users.js"); return; }
     
     const foundUser = usersDB.find(u => u.username === userIn && u.password === passIn);
+    
     if (foundUser) {
         currentUser = foundUser.username;
+        localStorage.setItem("session_user", currentUser); // [สำคัญ] บันทึกว่าคนนี้ล็อกอินแล้ว
+        
         alert("ยินดีต้อนรับคุณ " + foundUser.displayName + " !"); 
-        
-        loginPage.style.display = "none"; 
-        todoPage.style.display = "block"; 
-        logoutBtn.style.display = "flex"; 
-        
-        loadData(); 
-        checkForAdminNotifications(); 
-    } else { alert("รหัสผิดครับ!"); }
+        loginToWorkspace(foundUser);
+    } else { 
+        alert("รหัสผิดครับ!"); 
+    }
+}
+
+// ฟังก์ชันช่วยสลับหน้าจอ (ใช้ร่วมกันทั้ง Auto Login และ Manual Login)
+function loginToWorkspace(userObj) {
+    loginPage.style.display = "none"; 
+    todoPage.style.display = "block"; 
+    logoutBtn.style.display = "flex"; 
+    
+    loadData(); 
+    loadTheme(); 
+    checkForAdminNotifications(); 
 }
 
 function logout() {
     currentUser = null;
+    localStorage.removeItem("session_user"); // [สำคัญ] ลบ Session ออกเมื่อกดออก
+    
     listContainer.innerHTML = ""; noteListContainer.innerHTML = ""; 
     document.getElementById('feedback-btn-container').innerHTML = "";
+    
     todoPage.style.display = "none"; 
     logoutBtn.style.display = "none";
     loginPage.style.display = "block";
+    
     usernameInput.value = ""; passwordInput.value = "";
 }
 
-// ==================== THEME SYSTEM (จำค่าได้) ====================
+// ==================== 2. THEME SYSTEM ====================
 function toggleTheme() {
     document.body.classList.toggle("dark-mode");
     const btn = document.getElementById("theme-toggle-btn");
     
-    // ถ้ามีคลาส dark-mode ให้เซฟว่า 'dark' ถ้าไม่มีให้เซฟ 'light'
     if (document.body.classList.contains("dark-mode")) {
-        localStorage.setItem("theme", "dark"); // บันทึกลงเครื่อง
+        localStorage.setItem("theme", "dark");
         btn.innerHTML = "🖊️"; 
     } else {
-        localStorage.setItem("theme", "light"); // บันทึกลงเครื่อง
+        localStorage.setItem("theme", "light");
         btn.innerHTML = "🖋️"; 
     }
 }
 
 function loadTheme() {
     const btn = document.getElementById("theme-toggle-btn");
-    const savedTheme = localStorage.getItem("theme"); // อ่านค่าจากเครื่อง
+    const savedTheme = localStorage.getItem("theme");
 
-    // ถ้าค่าที่บันทึกไว้คือ 'dark' ให้ปรับเป็นมืดทันที
     if (savedTheme === "dark") {
         document.body.classList.add("dark-mode");
         btn.innerHTML = "🖊️";
     } else {
-        // ถ้าไม่มีค่า หรือเป็น light ให้เป็นปกติ
         document.body.classList.remove("dark-mode");
         btn.innerHTML = "🖋️";
     }
 }
-// ===============================================================
 
+// ==================== 3. TO-DO LIST ====================
 function addTask() {
     if (inputBox.value === '') { alert("กรุณาพิมพ์ข้อความก่อนกดเพิ่ม!"); } else {
         let li = document.createElement("li");
@@ -101,6 +136,7 @@ listContainer.addEventListener("click", function(e) {
     else if (e.target.tagName === "SPAN" && e.target.classList.contains("close")) { e.target.parentElement.remove(); saveData(); }
 }, false);
 
+// ==================== 4. NOTES ====================
 function addNote() {
     if (noteInputBox.value === '') { alert("กรุณาพิมพ์โน้ตก่อนกดเพิ่ม!"); } else {
         let li = document.createElement("li"); li.innerHTML = noteInputBox.value;
@@ -114,6 +150,7 @@ noteListContainer.addEventListener("click", function(e) {
     if (e.target.tagName === "SPAN") { e.target.parentElement.remove(); saveNotes(); }
 }, false);
 
+// ==================== 5. DATA SAVING ====================
 function saveData() { if (currentUser) localStorage.setItem("todo_" + currentUser, listContainer.innerHTML); }
 function saveNotes() { if (currentUser) localStorage.setItem("notes_" + currentUser, noteListContainer.innerHTML); }
 
@@ -127,6 +164,7 @@ function loadData() {
     }
 }
 
+// ==================== 6. ADMIN & FEEDBACK ====================
 function isAdmin() { const foundUser = usersDB.find(u => u.username === currentUser); return foundUser && foundUser.isAdmin === true; }
 function getFeedbackCount() { const feedbacks = JSON.parse(localStorage.getItem('feedback_messages')) || []; return feedbacks.filter(f => f.read === false).length; }
 
@@ -160,7 +198,11 @@ function submitFeedback() {
 function checkForAdminNotifications() {
     if (isAdmin()) { 
         const unreadCount = getFeedbackCount();
-        if (unreadCount > 0) alert(`คุณมี Feedback ใหม่ที่ยังไม่ได้อ่าน ${unreadCount} ข้อความ!`);
+        // [ปรับปรุง] เช็คก่อนว่าเคยแจ้งเตือนใน Session นี้หรือยัง เพื่อไม่ให้เด้งทุกครั้งที่รีเฟรช
+        if (unreadCount > 0 && !sessionStorage.getItem("notified")) {
+            alert(`คุณมี Feedback ใหม่ที่ยังไม่ได้อ่าน ${unreadCount} ข้อความ!`);
+            sessionStorage.setItem("notified", "true");
+        }
     }
 }
 
@@ -182,5 +224,6 @@ passwordInput.addEventListener("keypress", function(event) { if (event.key === "
 inputBox.addEventListener("keypress", function(event) { if (event.key === "Enter") addTask(); });
 noteInputBox.addEventListener("keypress", function(event) { if (event.key === "Enter") addNote(); });
 
-// [สำคัญ] เรียกใช้ฟังก์ชันโหลดธีมทันทีที่ไฟล์ Script ทำงาน (เปิดเว็บปุ๊บ เช็คธีมปั๊บ)
-loadTheme(); 
+// [สำคัญ] เรียก 2 ฟังก์ชันนี้ทันทีที่ไฟล์ทำงาน
+loadTheme();    // โหลดธีมก่อนเพื่อน
+checkSession(); // โหลดสถานะล็อกอินตามมา
