@@ -19,16 +19,19 @@ const feedbackList = document.getElementById("feedback-list");
 function checkLogin() {
     const userIn = usernameInput.value;
     const passIn = passwordInput.value;
+    
     if (typeof usersDB === 'undefined') { alert("ไม่พบไฟล์ users.js"); return; }
+    
     const foundUser = usersDB.find(u => u.username === userIn && u.password === passIn);
     if (foundUser) {
         currentUser = foundUser.username;
         alert("ยินดีต้อนรับคุณ " + foundUser.displayName + " !"); 
+        
         loginPage.style.display = "none"; 
         todoPage.style.display = "block"; 
         logoutBtn.style.display = "flex"; 
+        
         loadData(); 
-        loadTheme(); 
         checkForAdminNotifications(); 
     } else { alert("รหัสผิดครับ!"); }
 }
@@ -43,29 +46,36 @@ function logout() {
     usernameInput.value = ""; passwordInput.value = "";
 }
 
-// ==================== THEME TOGGLE (EMOJI) ====================
+// ==================== THEME SYSTEM (จำค่าได้) ====================
 function toggleTheme() {
     document.body.classList.toggle("dark-mode");
     const btn = document.getElementById("theme-toggle-btn");
+    
+    // ถ้ามีคลาส dark-mode ให้เซฟว่า 'dark' ถ้าไม่มีให้เซฟ 'light'
     if (document.body.classList.contains("dark-mode")) {
-        localStorage.setItem("theme", "dark");
-        btn.innerHTML = "🖊️"; // Dark Mode ให้โชว์ปากกา 1
+        localStorage.setItem("theme", "dark"); // บันทึกลงเครื่อง
+        btn.innerHTML = "🖊️"; 
     } else {
-        localStorage.setItem("theme", "light");
-        btn.innerHTML = "🖋️"; // Light Mode ให้โชว์ปากกา 2
+        localStorage.setItem("theme", "light"); // บันทึกลงเครื่อง
+        btn.innerHTML = "🖋️"; 
     }
 }
 
 function loadTheme() {
     const btn = document.getElementById("theme-toggle-btn");
-    if (localStorage.getItem("theme") === "dark") {
+    const savedTheme = localStorage.getItem("theme"); // อ่านค่าจากเครื่อง
+
+    // ถ้าค่าที่บันทึกไว้คือ 'dark' ให้ปรับเป็นมืดทันที
+    if (savedTheme === "dark") {
         document.body.classList.add("dark-mode");
         btn.innerHTML = "🖊️";
     } else {
+        // ถ้าไม่มีค่า หรือเป็น light ให้เป็นปกติ
+        document.body.classList.remove("dark-mode");
         btn.innerHTML = "🖋️";
     }
 }
-// =============================================================
+// ===============================================================
 
 function addTask() {
     if (inputBox.value === '') { alert("กรุณาพิมพ์ข้อความก่อนกดเพิ่ม!"); } else {
@@ -167,6 +177,10 @@ function displayFeedbackHistory() {
     renderFeedbackButton(); 
 }
 
+// Event Listeners
 passwordInput.addEventListener("keypress", function(event) { if (event.key === "Enter") checkLogin(); });
 inputBox.addEventListener("keypress", function(event) { if (event.key === "Enter") addTask(); });
 noteInputBox.addEventListener("keypress", function(event) { if (event.key === "Enter") addNote(); });
+
+// [สำคัญ] เรียกใช้ฟังก์ชันโหลดธีมทันทีที่ไฟล์ Script ทำงาน (เปิดเว็บปุ๊บ เช็คธีมปั๊บ)
+loadTheme(); 
