@@ -91,7 +91,35 @@
     </div>
 
     <script src="users.js"></script>
-    <script src="script.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Config ของคุณที่ให้มา
+        const firebaseConfig = {
+            apiKey: "AIzaSyAKNE4kBEb_EMKnVuqz92at8sPimRmGwS0",
+            authDomain: "todoschoolproject.firebaseapp.com",
+            projectId: "todoschoolproject",
+            storageBucket: "todoschoolproject.firebasestorage.app",
+            messagingSenderId: "125137716866",
+            appId: "1:125137716866:web:a0e2fd8997f25bab68d69b",
+            measurementId: "G-YDVRQW9RHQ"
+        };
+
+        // เริ่มต้น Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ส่งตัวแปรออกไปให้ script.js ใช้
+        window.db = db;
+        window.fbase = { collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc };
+        
+        console.log("Firebase Initialized!");
+
+        // เรียกไฟล์ script.js หลัก (ต้องเป็น module เพื่อรอ Firebase โหลดก่อน)
+        import "./script.js";
+    </script>
     
 </body>
 </html>
