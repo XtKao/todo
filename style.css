@@ -131,7 +131,7 @@ h2 { color: var(--text-main); margin-bottom: 40px; text-align: center; font-weig
 #date-box {
     border: none !important; background: transparent !important; padding: 12px 0 !important;
     box-shadow: none !important; outline: none; font-family: 'Prompt', sans-serif;
-    color: var(--text-main); cursor: pointer; max-width: 50px; font-size: 0.9rem;
+    color: var(--text-main); cursor: pointer; max-width: 40px; font-size: 0.9rem;
 }
 
 svg { stroke: var(--text-muted); } 
