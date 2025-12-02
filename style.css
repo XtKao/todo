@@ -199,7 +199,7 @@ span.close:hover { background: #fee2e2; color: white; }
 @keyframes fadeIn { from {opacity: 0; transform: translateY(-20px);} to {opacity: 1; transform: translateY(0);} }
 
 /* =========================================
-   7. Responsive (มือถือ) - แก้ไขล่าสุด
+   7. Responsive (มือถือ) - แก้ไขล่าสุด (70:30)
    ========================================= */
 @media (max-width: 880px) {
     .grid-layout { grid-template-columns: 1fr; gap: 30px; }
@@ -214,30 +214,30 @@ span.close:hover { background: #fee2e2; color: white; }
         width: 35px; height: 35px; font-size: 16px; 
     }
     .btn-logout { 
-        top: 15px; right: 70px; /* ขยับห่างออกมา */
+        top: 15px; right: 70px; 
         width: 35px !important; height: 35px !important; font-size: 16px !important; 
     }
     
-    /* 2. Input 80% : ปุ่มเวลา 20% (และโชว์ไอคอน) */
+    /* 2. Input 70% : ปุ่มเวลา 30% */
     .input-row { 
         flex-direction: row; 
         gap: 8px;
     }
     #input-box {
-        flex: 4; /* พื้นที่ ~80% */
+        flex: 7; /* พื้นที่ ~70% */
         width: auto;
     }
     .date-container {
-        flex: 1; /* พื้นที่ ~20% */
+        flex: 3; /* พื้นที่ ~30% */
         width: auto;
         max-width: none;
-        padding: 0 4px; /* ลด padding เพื่อให้ไอคอนไม่อึดอัด */
+        padding: 0 4px;
         gap: 2px;
         justify-content: center;
     }
     .date-container svg { 
-        display: block !important; /* เอากลับมาแสดง */
-        min-width: 16px; /* กันไอคอนบี้ */
+        display: block !important; /* โชว์ไอคอน */
+        min-width: 16px; 
     }
     #date-box { 
         width: 100%; 
