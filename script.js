@@ -1,6 +1,5 @@
 // ==================== VARIABLES ====================
 let currentUser = null; 
-let saveTimeout = null; 
 
 // อ้างอิง Element
 const loginPage = document.getElementById("login-page");
@@ -22,55 +21,60 @@ const feedbackList = document.getElementById("feedback-list");
 
 // ==================== 1. SESSION & LOGIN SYSTEM ====================
 
+// ฟังก์ชันเช็ค Session (ทำงานเมื่อเปิดเว็บ)
 window.checkSession = async function() {
-    const savedUser = localStorage.getItem("session_user");
-    if (savedUser && typeof usersDB !== 'undefined') {
-        const foundUser = usersDB.find(u => u.username === savedUser);
-        if (foundUser) {
-            currentUser = foundUser.username;
-            loginToWorkspace(foundUser);
-        } else {
-            localStorage.removeItem("session_user");
+    // รอแป๊บนึงเพื่อให้แน่ใจว่า Firebase module โหลดเสร็จ
+    setTimeout(() => {
+        const savedUser = localStorage.getItem("session_user");
+        if (savedUser && typeof usersDB !== 'undefined') {
+            const foundUser = usersDB.find(u => u.username === savedUser);
+            if (foundUser) {
+                currentUser = foundUser.username;
+                loginToWorkspace(foundUser);
+            }
         }
-    }
+    }, 500);
 }
 
+// ฟังก์ชันล็อกอิน
 window.checkLogin = function() {
     const userIn = usernameInput.value;
     const passIn = passwordInput.value;
     
-    if (typeof usersDB === 'undefined') { alert("กำลังโหลดข้อมูลผู้ใช้... กรุณารอสักครู่"); return; }
+    if (typeof usersDB === 'undefined') { alert("ไม่พบไฟล์ users.js"); return; }
     
     const foundUser = usersDB.find(u => u.username === userIn && u.password === passIn);
     
     if (foundUser) {
         currentUser = foundUser.username;
-        localStorage.setItem("session_user", currentUser); 
-        // alert("ยินดีต้อนรับคุณ " + foundUser.displayName + " !"); 
+        localStorage.setItem("session_user", currentUser); // จำ Session ไว้ในเครื่อง
+        alert("ยินดีต้อนรับคุณ " + foundUser.displayName + " !"); 
         loginToWorkspace(foundUser);
     } else { 
         alert("รหัสผิดครับ!"); 
     }
 }
 
+// เข้าสู่หน้า Workspace
 function loginToWorkspace(userObj) {
     loginPage.style.display = "none"; 
     todoPage.style.display = "block"; 
     logoutBtn.style.display = "flex"; 
     
-    document.getElementById('welcome-message').textContent = `ยินดีต้อนรับคุณ ${userObj.displayName}`;
+    document.getElementById('welcome-message').textContent = `กำลังโหลดข้อมูลจาก Cloud...`;
     
-    loadTheme(); 
-    loadDataCloud(); 
+    loadTheme(); // โหลดธีมสี (ใช้ LocalStorage เหมือนเดิม)
+    loadDataCloud(); // โหลดข้อมูล Todo/Note จาก Firebase
 }
 
+// ออกจากระบบ
 window.logout = function() {
     currentUser = null;
     localStorage.removeItem("session_user");
     
     listContainer.innerHTML = ""; 
     noteListContainer.innerHTML = ""; 
-    feedbackBtnContainer.innerHTML = "";
+    document.getElementById('feedback-btn-container').innerHTML = "";
     
     todoPage.style.display = "none"; 
     logoutBtn.style.display = "none";
@@ -106,7 +110,7 @@ function loadTheme() {
 }
 
 // ==================== 3. TO-DO LIST (CLOUD) ====================
-window.addTask = function() {
+window.addTask = async function() {
     if (inputBox.value === '') { alert("กรุณาพิมพ์ข้อความ!"); return; }
     
     let li = document.createElement("li");
@@ -124,22 +128,22 @@ window.addTask = function() {
     listContainer.appendChild(li);
 
     inputBox.value = ""; dateBox.value = ""; 
-    saveDataCloudDebounced(); 
+    await saveDataCloud(); // บันทึกขึ้น Cloud ทันที
 }
 
-listContainer.addEventListener("click", function(e) {
+listContainer.addEventListener("click", async function(e) {
     if (e.target.tagName === "LI") { 
         e.target.classList.toggle("checked"); 
-        saveDataCloudDebounced(); 
+        await saveDataCloud(); 
     } 
     else if (e.target.tagName === "SPAN" && e.target.classList.contains("close")) { 
         e.target.parentElement.remove(); 
-        saveDataCloudDebounced(); 
+        await saveDataCloud(); 
     }
 }, false);
 
 // ==================== 4. NOTES (CLOUD) ====================
-window.addNote = function() {
+window.addNote = async function() {
     if (noteInputBox.value === '') { alert("กรุณาพิมพ์โน้ต!"); return; }
     
     let li = document.createElement("li"); li.innerHTML = noteInputBox.value;
@@ -147,46 +151,41 @@ window.addNote = function() {
     noteListContainer.appendChild(li);
     
     noteInputBox.value = ""; 
-    saveDataCloudDebounced(); 
+    await saveDataCloud(); // บันทึกพร้อม Todo
 }
 
-noteListContainer.addEventListener("click", function(e) {
+noteListContainer.addEventListener("click", async function(e) {
     if (e.target.tagName === "SPAN") { 
         e.target.parentElement.remove(); 
-        saveDataCloudDebounced(); 
+        await saveDataCloud(); 
     }
 }, false);
 
-// ==================== 5. FIREBASE DATA HANDLER (OPTIMIZED) ====================
-function saveDataCloudDebounced() {
-    clearTimeout(saveTimeout);
-    const statusSpan = document.getElementById('save-status');
-    if(statusSpan) statusSpan.style.opacity = '1'; 
-
-    saveTimeout = setTimeout(async () => {
-        await saveDataCloud();
-        if(statusSpan) statusSpan.style.opacity = '0'; 
-    }, 1500);
-}
-
+// ==================== 5. FIREBASE DATA HANDLER ====================
+// บันทึก Todo และ Note ลง Firestore
 async function saveDataCloud() {
     if (!currentUser || !window.db) return;
     try {
         const { doc, setDoc } = window.fbase;
+        // บันทึกลง Collection "userData", Document ID เป็นชื่อ user (เช่น "12345")
         await setDoc(doc(window.db, "userData", currentUser), {
             todoHtml: listContainer.innerHTML,
             noteHtml: noteListContainer.innerHTML,
             lastUpdate: new Date().toISOString()
         });
-        console.log("Auto-saved to Cloud!");
+        console.log("Saved to Cloud!");
     } catch (e) {
         console.error("Save Error:", e);
     }
 }
 
+// โหลดข้อมูล Todo และ Note จาก Firestore
 async function loadDataCloud() {
     if (!currentUser || !window.db) return;
     try {
+        const foundUser = usersDB.find(u => u.username === currentUser);
+        document.getElementById('welcome-message').textContent = `ยินดีต้อนรับคุณ ${foundUser.displayName}`;
+
         const { doc, getDoc } = window.fbase;
         const docRef = doc(window.db, "userData", currentUser);
         const docSnap = await getDoc(docRef);
@@ -195,8 +194,13 @@ async function loadDataCloud() {
             const data = docSnap.data();
             listContainer.innerHTML = data.todoHtml || "";
             noteListContainer.innerHTML = data.noteHtml || "";
+        } else {
+            // User ใหม่ ยังไม่มีข้อมูล
+            listContainer.innerHTML = "";
+            noteListContainer.innerHTML = "";
         }
         
+        // เช็ค Feedback ต่อ
         renderFeedbackButton();
         checkForAdminNotifications();
     } catch (e) {
@@ -205,16 +209,21 @@ async function loadDataCloud() {
     }
 }
 
-// ==================== 6. ADMIN & FEEDBACK ====================
+// ==================== 6. ADMIN & FEEDBACK (REALTIME-ISH) ====================
 function isAdmin() { const foundUser = usersDB.find(u => u.username === currentUser); return foundUser && foundUser.isAdmin === true; }
 
+// นับ Feedback ที่ยังไม่ได้อ่านจาก Cloud
 async function getUnreadFeedbackCount() {
     if(!window.db) return 0;
     try {
-        const { collection, getDocs, query, where } = window.fbase;
-        const q = query(collection(window.db, "feedbacks"), where("read", "==", false));
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.size;
+        const { collection, getDocs } = window.fbase;
+        // ดึงมาทั้งหมดแล้วนับ (สำหรับโปรเจกต์ขนาดเล็ก)
+        const querySnapshot = await getDocs(collection(window.db, "feedbacks"));
+        let count = 0;
+        querySnapshot.forEach((doc) => {
+            if (!doc.data().read) count++;
+        });
+        return count;
     } catch(e) { return 0; }
 }
 
@@ -235,6 +244,7 @@ window.openUserFeedbackModal = function() { feedbackModal.style.display = "block
 window.openAdminHistoryModal = function() { feedbackModal.style.display = "block"; userFeedbackForm.style.display = "none"; adminFeedbackHistory.style.display = "block"; displayFeedbackHistoryCloud(); }
 window.closeFeedbackModal = function() { feedbackModal.style.display = "none"; }
 
+// ส่ง Feedback ขึ้น Cloud
 window.submitFeedback = async function() {
     const feedbackMsg = feedbackText.value.trim();
     if (feedbackMsg === '') { alert("กรุณาพิมพ์ข้อเสนอแนะ!"); return; }
@@ -256,47 +266,62 @@ window.submitFeedback = async function() {
     }
 }
 
+// แจ้งเตือนแอดมิน
 async function checkForAdminNotifications() {
     if (isAdmin()) { 
         const unreadCount = await getUnreadFeedbackCount();
+        // แจ้งเตือนแค่ครั้งเดียวต่อการเปิดหน้าเว็บ
         if (unreadCount > 0 && !sessionStorage.getItem("notified")) {
-            console.log(`มี Feedback ใหม่ ${unreadCount} ข้อความ!`);
+            alert(`มี Feedback ใหม่ ${unreadCount} ข้อความ!`);
             sessionStorage.setItem("notified", "true");
         }
     }
 }
 
+// แสดงรายการ Feedback (Admin)
 async function displayFeedbackHistoryCloud() {
     feedbackList.innerHTML = "<p style='text-align:center;'>กำลังโหลดข้อมูล...</p>";
+    
     try {
-        const { collection, getDocs, updateDoc, doc, orderBy, query } = window.fbase;
-        const q = query(collection(window.db, "feedbacks"), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
+        const { collection, getDocs, updateDoc, doc } = window.fbase;
+        const querySnapshot = await getDocs(collection(window.db, "feedbacks"));
         
+        let feedbacks = [];
+        querySnapshot.forEach((doc) => {
+            feedbacks.push({ id: doc.id, ...doc.data() });
+        });
+
+        // เรียงจากใหม่ไปเก่า
+        feedbacks.sort((a, b) => (a.createdAt < b.createdAt) ? 1 : -1);
+
         let historyHtml = '';
-        querySnapshot.forEach((docSnap) => {
-            let f = docSnap.data();
+        for (let f of feedbacks) {
             let statusClass = f.read ? 'read' : 'unread'; 
             let statusText = f.read ? 'อ่านแล้ว' : 'ใหม่';
+            
             historyHtml += `<div class="feedback-item ${statusClass}"><span class="feedback-status-badge">${statusText}</span><p><strong>จาก:</strong> ${f.user} (${f.timestamp})</p><p class="feedback-message">${f.message}</p></div>`;
             
+            // ถ้าเป็นข้อความใหม่ ให้แก้สถานะเป็น "อ่านแล้ว" บน Cloud ทันที
             if (!f.read) {
-                const fRef = doc(window.db, "feedbacks", docSnap.id);
-                updateDoc(fRef, { read: true }); 
+                const fRef = doc(window.db, "feedbacks", f.id);
+                await updateDoc(fRef, { read: true });
             }
-        });
+        }
         
         feedbackList.innerHTML = historyHtml === '' ? '<p style="text-align: center;">ไม่มี Feedback</p>' : historyHtml;
-        renderFeedbackButton(); 
+        
+        renderFeedbackButton(); // อัปเดตตัวเลขแจ้งเตือน
+
     } catch(e) {
         console.error(e);
         feedbackList.innerHTML = "<p style='color:red; text-align:center;'>โหลดข้อมูลผิดพลาด</p>";
     }
 }
 
+// Event Listeners สำหรับปุ่ม Enter
 passwordInput.addEventListener("keypress", function(event) { if (event.key === "Enter") checkLogin(); });
 inputBox.addEventListener("keypress", function(event) { if (event.key === "Enter") addTask(); });
 noteInputBox.addEventListener("keypress", function(event) { if (event.key === "Enter") addNote(); });
 
+// เริ่มต้น: เช็ค Session ทันทีที่โหลด
 window.checkSession();
-                
