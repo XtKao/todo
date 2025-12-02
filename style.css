@@ -199,42 +199,45 @@ span.close:hover { background: #fee2e2; color: white; }
 @keyframes fadeIn { from {opacity: 0; transform: translateY(-20px);} to {opacity: 1; transform: translateY(0);} }
 
 /* =========================================
-   7. Responsive (มือถือ) - แก้ไขตามที่ขอ
+   7. Responsive (มือถือ) - แก้ไขล่าสุด
    ========================================= */
 @media (max-width: 880px) {
     .grid-layout { grid-template-columns: 1fr; gap: 30px; }
     .main-workspace { max-width: 95%; padding: 30px 20px; }
     
-    /* แก้ไข 1: ขยับปุ่ม Theme กับ Logout ให้ห่างกันมากขึ้น */
+    /* 1. ปุ่ม Theme / Logout ห่างกันมากขึ้น */
     .theme-btn, .btn-logout {
         background: var(--mobile-btn-bg) !important;
     }
-    
     .theme-btn { 
         top: 15px; right: 15px; 
         width: 35px; height: 35px; font-size: 16px; 
     }
     .btn-logout { 
-        top: 15px; 
-        right: 70px; /* ขยับให้ห่างจากเดิม (เดิม 60px) */
+        top: 15px; right: 70px; /* ขยับห่างออกมา */
         width: 35px !important; height: 35px !important; font-size: 16px !important; 
     }
     
-    /* แก้ไข 2: ให้ Input และ ปุ่มนาฬิกา อยู่บรรทัดเดียวกัน (80% : 20%) */
+    /* 2. Input 80% : ปุ่มเวลา 20% (และโชว์ไอคอน) */
     .input-row { 
-        flex-direction: row; /* บังคับแนวนอน */
+        flex-direction: row; 
         gap: 8px;
     }
     #input-box {
-        flex: 4; /* พื้นที่ประมาณ 80% */
+        flex: 4; /* พื้นที่ ~80% */
         width: auto;
     }
     .date-container {
-        flex: 1; /* พื้นที่ประมาณ 20% */
+        flex: 1; /* พื้นที่ ~20% */
         width: auto;
         max-width: none;
-        padding: 0;
+        padding: 0 4px; /* ลด padding เพื่อให้ไอคอนไม่อึดอัด */
+        gap: 2px;
         justify-content: center;
+    }
+    .date-container svg { 
+        display: block !important; /* เอากลับมาแสดง */
+        min-width: 16px; /* กันไอคอนบี้ */
     }
     #date-box { 
         width: 100%; 
@@ -242,13 +245,11 @@ span.close:hover { background: #fee2e2; color: white; }
         padding: 10px 0 !important;
         text-align: center;
     }
-    /* ซ่อนไอคอนนาฬิกาในมือถือถ้ามันเกะกะ เพื่อให้พื้นที่กดเยอะขึ้น */
-    .date-container svg { display: none; }
 
-    /* แก้ไข 3: ให้ปุ่ม Feedback แสดงผลตลอดเวลา (ลบ display: none ออก) */
+    /* 3. ปุ่ม Feedback แสดงผล */
     #feedback-btn-container { 
         display: block !important; 
-        bottom: 60px; /* ขยับขึ้นหลบเครดิต */
+        bottom: 60px; 
         left: 20px;
     }
     
