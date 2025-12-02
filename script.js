@@ -1,6 +1,6 @@
 // ==================== VARIABLES ====================
 let currentUser = null; 
-let saveTimeout = null; // ตัวแปรสำหรับระบบ Debounce
+let saveTimeout = null; 
 
 // อ้างอิง Element
 const loginPage = document.getElementById("login-page");
@@ -22,23 +22,19 @@ const feedbackList = document.getElementById("feedback-list");
 
 // ==================== 1. SESSION & LOGIN SYSTEM ====================
 
-// ฟังก์ชันเช็ค Session (ทำงานทันที ไม่ต้องรอ 500ms)
 window.checkSession = async function() {
     const savedUser = localStorage.getItem("session_user");
-    // ตรวจสอบว่ามี usersDB หรือไม่ (ถ้าโหลด script users.js มาแล้ว)
     if (savedUser && typeof usersDB !== 'undefined') {
         const foundUser = usersDB.find(u => u.username === savedUser);
         if (foundUser) {
             currentUser = foundUser.username;
             loginToWorkspace(foundUser);
         } else {
-            // ถ้า User ใน session ไม่ตรงกับ database ให้เคลียร์ทิ้ง
             localStorage.removeItem("session_user");
         }
     }
 }
 
-// ฟังก์ชันล็อกอิน
 window.checkLogin = function() {
     const userIn = usernameInput.value;
     const passIn = passwordInput.value;
@@ -50,7 +46,6 @@ window.checkLogin = function() {
     if (foundUser) {
         currentUser = foundUser.username;
         localStorage.setItem("session_user", currentUser); 
-        // alert ตัดออกเพื่อให้เข้าไวขึ้น หรือจะเก็บไว้ก็ได้
         // alert("ยินดีต้อนรับคุณ " + foundUser.displayName + " !"); 
         loginToWorkspace(foundUser);
     } else { 
@@ -58,7 +53,6 @@ window.checkLogin = function() {
     }
 }
 
-// เข้าสู่หน้า Workspace
 function loginToWorkspace(userObj) {
     loginPage.style.display = "none"; 
     todoPage.style.display = "block"; 
@@ -70,7 +64,6 @@ function loginToWorkspace(userObj) {
     loadDataCloud(); 
 }
 
-// ออกจากระบบ
 window.logout = function() {
     currentUser = null;
     localStorage.removeItem("session_user");
@@ -131,7 +124,7 @@ window.addTask = function() {
     listContainer.appendChild(li);
 
     inputBox.value = ""; dateBox.value = ""; 
-    saveDataCloudDebounced(); // ใช้การบันทึกแบบหน่วงเวลา
+    saveDataCloudDebounced(); 
 }
 
 listContainer.addEventListener("click", function(e) {
@@ -165,17 +158,14 @@ noteListContainer.addEventListener("click", function(e) {
 }, false);
 
 // ==================== 5. FIREBASE DATA HANDLER (OPTIMIZED) ====================
-
-// Debounce Function: รอให้ผู้ใช้หยุดทำกิจกรรม 1.5 วินาที แล้วค่อยส่งข้อมูลทีเดียว
-// ช่วยลดการใช้งาน Read/Write ของ Firebase และทำให้เว็บไม่กระตุก
 function saveDataCloudDebounced() {
     clearTimeout(saveTimeout);
     const statusSpan = document.getElementById('save-status');
-    if(statusSpan) statusSpan.style.opacity = '1'; // แสดงสถานะว่า "กำลังรอ..."
+    if(statusSpan) statusSpan.style.opacity = '1'; 
 
     saveTimeout = setTimeout(async () => {
         await saveDataCloud();
-        if(statusSpan) statusSpan.style.opacity = '0'; // ซ่อนสถานะเมื่อเสร็จ
+        if(statusSpan) statusSpan.style.opacity = '0'; 
     }, 1500);
 }
 
@@ -222,7 +212,6 @@ async function getUnreadFeedbackCount() {
     if(!window.db) return 0;
     try {
         const { collection, getDocs, query, where } = window.fbase;
-        // ใช้ Query แบบ where เพื่อดึงเฉพาะอันที่ยังไม่อ่าน (เร็วกว่าดึงทั้งหมด)
         const q = query(collection(window.db, "feedbacks"), where("read", "==", false));
         const querySnapshot = await getDocs(q);
         return querySnapshot.size;
@@ -271,7 +260,6 @@ async function checkForAdminNotifications() {
     if (isAdmin()) { 
         const unreadCount = await getUnreadFeedbackCount();
         if (unreadCount > 0 && !sessionStorage.getItem("notified")) {
-            // ใช้ Toast notification เล็กๆ แทน alert เพื่อไม่ให้ขัดจังหวะการใช้งาน
             console.log(`มี Feedback ใหม่ ${unreadCount} ข้อความ!`);
             sessionStorage.setItem("notified", "true");
         }
@@ -282,7 +270,6 @@ async function displayFeedbackHistoryCloud() {
     feedbackList.innerHTML = "<p style='text-align:center;'>กำลังโหลดข้อมูล...</p>";
     try {
         const { collection, getDocs, updateDoc, doc, orderBy, query } = window.fbase;
-        // ใช้ orderBy จาก Server เลย เร็วกว่ามา sort เอง
         const q = query(collection(window.db, "feedbacks"), orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
         
@@ -295,7 +282,7 @@ async function displayFeedbackHistoryCloud() {
             
             if (!f.read) {
                 const fRef = doc(window.db, "feedbacks", docSnap.id);
-                updateDoc(fRef, { read: true }); // ไม่ต้อง await เพื่อให้ UI แสดงผลเลยไม่ต้องรอ
+                updateDoc(fRef, { read: true }); 
             }
         });
         
@@ -311,5 +298,5 @@ passwordInput.addEventListener("keypress", function(event) { if (event.key === "
 inputBox.addEventListener("keypress", function(event) { if (event.key === "Enter") addTask(); });
 noteInputBox.addEventListener("keypress", function(event) { if (event.key === "Enter") addNote(); });
 
-// เริ่มต้น: เช็ค Session 
 window.checkSession();
+                
